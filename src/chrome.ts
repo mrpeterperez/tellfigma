@@ -121,13 +121,21 @@ export async function launchChrome(
   return { port, process: child, launched: true };
 }
 
-/** Find the Figma tab among Chrome's open pages */
-export async function findFigmaTab(port: number): Promise<{
+export interface FigmaTabInfo {
   id: string;
   title: string;
   url: string;
   webSocketDebuggerUrl: string;
-} | null> {
+}
+
+/** Find the first Figma tab among Chrome's open pages */
+export async function findFigmaTab(port: number): Promise<FigmaTabInfo | null> {
+  const tabs = await findAllFigmaTabs(port);
+  return tabs.length > 0 ? tabs[0] : null;
+}
+
+/** Find ALL open Figma tabs in Chrome */
+export async function findAllFigmaTabs(port: number): Promise<FigmaTabInfo[]> {
   try {
     const res = await fetch(`http://127.0.0.1:${port}/json`);
     const pages = (await res.json()) as Array<{
@@ -138,24 +146,26 @@ export async function findFigmaTab(port: number): Promise<{
       webSocketDebuggerUrl: string;
     }>;
 
-    // Find the Figma design tab (not just figma.com homepage)
-    const figmaTab =
-      pages.find(
-        (p) => p.type === 'page' && p.url.includes('figma.com/design')
-      ) ||
-      pages.find(
-        (p) => p.type === 'page' && p.url.includes('figma.com/file')
-      ) ||
-      pages.find(
-        (p) => p.type === 'page' && p.url.includes('figma.com/board')
-      ) ||
-      pages.find(
+    // Filter to Figma design/file/board tabs, prioritized
+    const designTabs = pages.filter(
+      (p) => p.type === 'page' && (
+        p.url.includes('figma.com/design') ||
+        p.url.includes('figma.com/file') ||
+        p.url.includes('figma.com/board')
+      )
+    );
+
+    // If no design tabs, fall back to any figma.com tab
+    if (designTabs.length === 0) {
+      const anyFigma = pages.filter(
         (p) => p.type === 'page' && p.url.includes('figma.com')
       );
+      return anyFigma;
+    }
 
-    return figmaTab || null;
+    return designTabs;
   } catch {
-    return null;
+    return [];
   }
 }
 

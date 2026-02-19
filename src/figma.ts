@@ -1,16 +1,25 @@
 // ============================================================
 // Figma CDP Connection & Helpers
-// Manages Chrome DevTools Protocol connection and provides
-// core functions for executing code, taking screenshots, etc.
+// Manages Chrome DevTools Protocol connections to MULTIPLE
+// Figma tabs and provides core functions for executing code,
+// taking screenshots, etc.
 // ============================================================
 
 import CDP from 'chrome-remote-interface';
-import { findFigmaTab } from './chrome.js';
+import { findFigmaTab, findAllFigmaTabs, type FigmaTabInfo } from './chrome.js';
+
+// ---- Types ----
+interface TabConnection {
+  client: CDP.Client;
+  tabId: string;
+  tabTitle: string;
+  tabUrl: string;
+}
 
 // ---- State ----
-let cdpClient: CDP.Client | null = null;
+const connections: Map<string, TabConnection> = new Map();
+let activeTabId: string | null = null;
 let chromePort: number = 9222;
-let lastTabUrl: string | null = null;
 
 // ---- Logging (stderr so it doesn't interfere with MCP stdio) ----
 export function log(msg: string) {
@@ -22,23 +31,72 @@ export function setChromePort(port: number) {
   chromePort = port;
 }
 
-// ---- CDP Connection (auto-reconnect) ----
+// ---- CDP Connection (multi-tab, auto-reconnect) ----
 
-export async function ensureConnected(): Promise<CDP.Client> {
-  if (cdpClient) {
+/** Connect to a specific Figma tab by its Chrome tab ID */
+async function connectToTab(tab: FigmaTabInfo): Promise<TabConnection> {
+  // Check if we already have a live connection to this tab
+  const existing = connections.get(tab.id);
+  if (existing) {
     try {
-      // Test if connection is still alive
-      await cdpClient.Runtime.evaluate({ expression: '1+1' });
-      return cdpClient;
+      await existing.client.Runtime.evaluate({ expression: '1+1' });
+      return existing;
     } catch {
-      log('Connection lost, reconnecting...');
-      try { cdpClient.close(); } catch {}
-      cdpClient = null;
+      log(`Connection to "${tab.title}" lost, reconnecting...`);
+      try { existing.client.close(); } catch {}
+      connections.delete(tab.id);
     }
   }
 
-  // Retry logic — Figma tab may take a moment after page load
-  let tab = null;
+  log(`Connecting to Figma tab: ${tab.title}`);
+  const client = await CDP({
+    port: chromePort,
+    target: tab.webSocketDebuggerUrl,
+  });
+
+  await client.Runtime.enable();
+  await client.Page.enable();
+
+  const conn: TabConnection = {
+    client,
+    tabId: tab.id,
+    tabTitle: tab.title,
+    tabUrl: tab.url,
+  };
+
+  // Auto-cleanup on disconnect
+  client.on('disconnect', () => {
+    log(`CDP disconnected from "${tab.title}" — will reconnect on next tool call`);
+    connections.delete(tab.id);
+    if (activeTabId === tab.id) {
+      activeTabId = null;
+    }
+  });
+
+  connections.set(tab.id, conn);
+  return conn;
+}
+
+/** Ensure connection to the active tab (auto-selects first tab if none active) */
+export async function ensureConnected(): Promise<CDP.Client> {
+  // If we have an active tab with a live connection, use it
+  if (activeTabId) {
+    const conn = connections.get(activeTabId);
+    if (conn) {
+      try {
+        await conn.client.Runtime.evaluate({ expression: '1+1' });
+        return conn.client;
+      } catch {
+        log(`Active tab connection lost, reconnecting...`);
+        try { conn.client.close(); } catch {}
+        connections.delete(activeTabId);
+        activeTabId = null;
+      }
+    }
+  }
+
+  // No active tab — find one
+  let tab: FigmaTabInfo | null = null;
   for (let attempt = 0; attempt < 3; attempt++) {
     tab = await findFigmaTab(chromePort);
     if (tab) break;
@@ -54,23 +112,93 @@ export async function ensureConnected(): Promise<CDP.Client> {
     );
   }
 
-  log(`Connecting to Figma tab: ${tab.title}`);
-  lastTabUrl = tab.url;
-  cdpClient = await CDP({
-    port: chromePort,
-    target: tab.webSocketDebuggerUrl,
-  });
+  const conn = await connectToTab(tab);
+  activeTabId = conn.tabId;
+  return conn.client;
+}
 
-  await cdpClient.Runtime.enable();
-  await cdpClient.Page.enable();
+// ---- Multi-Tab Management ----
 
-  // Auto-reconnect on disconnect
-  cdpClient.on('disconnect', () => {
-    log('CDP disconnected — will reconnect on next tool call');
-    cdpClient = null;
-  });
+/** List all available Figma tabs */
+export async function listFigmaTabs(): Promise<Array<{
+  id: string;
+  title: string;
+  url: string;
+  active: boolean;
+  connected: boolean;
+}>> {
+  const tabs = await findAllFigmaTabs(chromePort);
+  return tabs.map(tab => ({
+    id: tab.id,
+    title: tab.title,
+    url: tab.url,
+    active: tab.id === activeTabId,
+    connected: connections.has(tab.id),
+  }));
+}
 
-  return cdpClient;
+/** Switch to a different Figma tab by ID, title substring, or URL substring */
+export async function switchToTab(identifier: string): Promise<{
+  tabId: string;
+  title: string;
+  url: string;
+}> {
+  const tabs = await findAllFigmaTabs(chromePort);
+
+  if (tabs.length === 0) {
+    throw new Error('No Figma tabs found in Chrome.');
+  }
+
+  // Try matching by exact ID first
+  let target = tabs.find(t => t.id === identifier);
+
+  // Then by title substring (case-insensitive)
+  if (!target) {
+    target = tabs.find(t =>
+      t.title.toLowerCase().includes(identifier.toLowerCase())
+    );
+  }
+
+  // Then by URL substring
+  if (!target) {
+    target = tabs.find(t =>
+      t.url.toLowerCase().includes(identifier.toLowerCase())
+    );
+  }
+
+  // Try numeric index (1-based)
+  if (!target) {
+    const idx = parseInt(identifier, 10);
+    if (!isNaN(idx) && idx >= 1 && idx <= tabs.length) {
+      target = tabs[idx - 1];
+    }
+  }
+
+  if (!target) {
+    const available = tabs.map((t, i) => `  ${i + 1}. "${t.title}" — ${t.url}`).join('\n');
+    throw new Error(
+      `No Figma tab matches "${identifier}".\n\nAvailable tabs:\n${available}`
+    );
+  }
+
+  // Connect to the target tab
+  const conn = await connectToTab(target);
+  activeTabId = conn.tabId;
+
+  log(`Switched to: "${target.title}"`);
+  return {
+    tabId: target.id,
+    title: target.title,
+    url: target.url,
+  };
+}
+
+/** Get info about the currently active tab */
+export function getActiveTabInfo(): { tabId: string; title: string; url: string } | null {
+  if (!activeTabId) return null;
+  const conn = connections.get(activeTabId);
+  if (!conn) return null;
+  return { tabId: conn.tabId, title: conn.tabTitle, url: conn.tabUrl };
 }
 
 // ---- Execute Figma Code ----

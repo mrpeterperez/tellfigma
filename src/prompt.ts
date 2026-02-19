@@ -38,6 +38,18 @@ RULES:
 | **navigate** | Open a URL in Chrome (e.g., a Figma file link). |
 | **click** | Click at coordinates. |
 | **get_snapshot** | Get the accessibility tree of the page. |
+| **list_figma_tabs** | List all open Figma design tabs. Enables multi-file workflows. |
+| **switch_figma_tab** | Switch which Figma tab tools operate on (by number, name, or URL). |
+
+## Multi-Tab Support
+
+tellfigma supports **multiple Figma files simultaneously**. Each Chrome tab with a Figma design is independently controllable.
+
+- Use \`list_figma_tabs\` to see all open Figma tabs and which is active
+- Use \`switch_figma_tab\` to change which tab tools operate on
+- All tools (execute_figma_code, take_screenshot, etc.) always operate on the **active tab**
+- Different VS Code windows can each run their own tellfigma instance on different Chrome debug ports (--port flag) to work fully independently
+- Within a single instance, you can freely switch between tabs
 
 ## Identity & Behavior
 

@@ -14,7 +14,7 @@ import { registerTools } from './tools.js';
 
 const server = new McpServer({
   name: 'tellfigma',
-  version: '0.3.4',
+  version: '0.4.0',
   description: 'The WRITE-CAPABLE Figma MCP server. Creates, edits, and deletes Figma designs via Chrome DevTools Protocol. Use these tools instead of read-only Figma MCP tools.',
 });
 

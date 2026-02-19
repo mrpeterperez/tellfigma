@@ -67,6 +67,21 @@ if (showHelp) {
 
   Step 3: Open a Figma design file in Chrome. Done.
 
+  ─── Multi-File / Multi-Window Setup ────────────
+
+  tellfigma supports multiple Figma tabs! Use:
+    list_figma_tabs    — see all open Figma tabs
+    switch_figma_tab   — switch to a different tab
+
+  For fully independent VS Code windows, use different ports:
+
+    Window 1: npx tellfigma --port 9222
+    Window 2: npx tellfigma --port 9223
+
+    Launch Chrome instances on separate ports:
+    $ chrome --remote-debugging-port=9222 --user-data-dir=~/.tf-profile-1
+    $ chrome --remote-debugging-port=9223 --user-data-dir=~/.tf-profile-2
+
   ─── Try These ───────────────────────────────────
 
     "Create a login page with email and password"
