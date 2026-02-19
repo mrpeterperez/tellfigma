@@ -101,7 +101,9 @@ export async function executeFigmaCode(code: string): Promise<string> {
 
     // Add helpful hints for common errors
     let hint = '';
-    if (errorText.includes('loadFontAsync')) {
+    if (errorText.includes('figma is not defined') || errorText.includes('figma is undefined')) {
+      hint = '\n\nHint: The Figma Plugin API is not available. Open any Figma plugin (e.g. Iconify), close it, then try again. This activates the figma global.';
+    } else if (errorText.includes('loadFontAsync')) {
       hint = '\n\nHint: You must call await figma.loadFontAsync({ family, style }) before setting characters on a text node.';
     } else if (errorText.includes('Cannot read properties of null')) {
       hint = '\n\nHint: A node was null. Use figma.currentPage.findOne() carefully — it returns null if nothing matches.';
@@ -109,6 +111,14 @@ export async function executeFigmaCode(code: string): Promise<string> {
       hint = '\n\nHint: Check that you\'re calling the right method. E.g., figma.createFrame() not figma.createAutoLayout().';
     } else if (errorText.includes('layoutSizingHorizontal') || errorText.includes('layoutSizingVertical')) {
       hint = '\n\nHint: layoutSizingHorizontal/Vertical must be set AFTER the node is appended to a parent with layoutMode.';
+    } else if (errorText.includes('Cannot assign to read only property')) {
+      hint = '\n\nHint: Some Figma properties are read-only. Check the Figma Plugin API docs for the correct setter.';
+    } else if (errorText.includes('SemiBold') && !errorText.includes('Semi Bold')) {
+      hint = '\n\nHint: For Inter font, use "Semi Bold" (with a space), not "SemiBold".';
+    } else if (errorText.includes('font')) {
+      hint = '\n\nHint: Make sure you loaded the font first: await figma.loadFontAsync({ family: "Inter", style: "Regular" })';
+    } else if (errorText.includes('timeout') || errorText.includes('Timeout')) {
+      hint = '\n\nHint: The code took too long (>30s). Break it into smaller chunks or simplify the operation.';
     }
 
     return `Error: ${errorText}${hint}`;
