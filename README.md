@@ -1,10 +1,20 @@
 # tellfigma
 
-**Control Figma from any AI app. One command.**
+**The missing piece: AI that designs directly in Figma. One command.**
 
-tellfigma is an [MCP server](https://modelcontextprotocol.io) that gives your AI full control over Figma — create designs, modify layouts, inspect elements, and take screenshots — all through natural conversation.
+Figma's MCP server reads designs for code generation. [Claude Code to Figma](https://www.figma.com/blog/introducing-claude-code-to-figma/) captures running code as Figma layers. **tellfigma closes the loop** — your AI creates and edits designs directly on the Figma canvas.
+
+tellfigma is an [MCP server](https://modelcontextprotocol.io) that gives your AI full control over Figma — create designs from scratch, modify layouts, inspect elements, and take screenshots — all through natural conversation.
 
 No Figma API key. No plugin to install. No complex setup. Just `npx tellfigma`.
+
+### The Full AI + Figma Loop
+
+```
+① tellfigma              AI  ──────►  Figma       "Design a dashboard"
+② Figma MCP Server       Figma ──────►  Code        "Build this design"
+③ Claude Code to Figma   Code  ──────►  Figma       "Capture this UI"
+```
 
 ## How It Works
 
@@ -188,15 +198,17 @@ Chrome runs with its own profile directory so it won't interfere with your norma
 
 ## Compared to Alternatives
 
-| Feature | tellfigma | Figma REST API tools | Plugin + WebSocket tools |
-|---------|-----------|---------------------|-------------------------|
-| Create/edit designs | ✅ | ❌ Read-only | ✅ |
-| Real screenshots | ✅ | ❌ | ❌ |
-| Setup steps | 1 | 1-2 | 3+ |
-| Pieces to manage | 1 | 1 | 3 (plugin + WS + MCP) |
-| API key required | ❌ | ✅ Figma token | ❌ |
-| Plugin install | ❌ | ❌ | ✅ |
-| Full browser access | ✅ | ❌ | ❌ |
+| Feature | tellfigma | Figma MCP Server | Claude Code to Figma | Plugin + WebSocket tools |
+|---------|-----------|-----------------|---------------------|-------------------------|
+| Creates designs from scratch | ✅ | ❌ | ❌ (captures existing UI) | ✅ |
+| Edits existing designs | ✅ | ❌ Read-only | ❌ One-time import | ✅ |
+| Real screenshots | ✅ | ✅ | N/A | ❌ |
+| Works with any MCP client | ✅ | ✅ | ❌ Claude Code only | ❌ |
+| Needs running code | ❌ | ❌ | ✅ Requires localhost/staging | ❌ |
+| API key / OAuth required | ❌ | ✅ Figma token | ✅ Figma OAuth | ❌ |
+| Plugin install | ❌ | ❌ | ❌ | ✅ |
+| Full Plugin API access | ✅ | ❌ | ❌ | Partial (sandboxed) |
+| Setup | `npx tellfigma` | Config + token | Remote server + OAuth | Plugin + WS + MCP |
 
 ## License
 

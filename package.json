@@ -1,7 +1,7 @@
 {
   "name": "tellfigma",
   "version": "0.1.0",
-  "description": "Control Figma from any AI app. One command.",
+  "description": "The missing piece: AI that designs directly in Figma. No plugin, no API key. One command.",
   "type": "module",
   "bin": {
     "tellfigma": "./bin/cli.js"
@@ -21,9 +21,20 @@
     "chrome",
     "devtools",
     "claude",
+    "claude-code",
+    "claude-code-to-figma",
     "chatgpt",
     "cursor",
-    "model-context-protocol"
+    "windsurf",
+    "vscode",
+    "copilot",
+    "model-context-protocol",
+    "figma-mcp",
+    "figma-plugin-api",
+    "design-to-code",
+    "code-to-design",
+    "ai-design",
+    "generative-design"
   ],
   "author": "Directive Labs",
   "license": "MIT",
