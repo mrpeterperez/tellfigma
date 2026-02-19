@@ -292,6 +292,130 @@ export async function takeScreenshot(): Promise<{
   };
 }
 
+// ---- Figma REST API (Comments, etc.) ----
+
+function getFigmaToken(): string {
+  const token = process.env.FIGMA_TOKEN || process.env.FIGMA_PERSONAL_ACCESS_TOKEN;
+  if (!token) {
+    throw new Error(
+      'FIGMA_TOKEN environment variable is required for comment access.\n\n' +
+      'Get a personal access token from: Figma → Settings → Personal access tokens\n' +
+      'Then set it: export FIGMA_TOKEN="figd_..."'
+    );
+  }
+  return token;
+}
+
+/** Extract the Figma file key from the active tab URL */
+async function getFileKey(): Promise<string> {
+  const client = await ensureConnected();
+  const { result } = await client.Runtime.evaluate({
+    expression: 'window.location.href',
+    returnByValue: true,
+  });
+  const url = result.value as string;
+  // Match /design/KEY, /file/KEY, or /board/KEY
+  const match = url.match(/figma\.com\/(?:design|file|board)\/([a-zA-Z0-9]+)/);
+  if (!match) {
+    throw new Error(`Cannot extract file key from URL: ${url}`);
+  }
+  return match[1];
+}
+
+/** Fetch comments from the Figma REST API */
+export async function getComments(options?: {
+  nodeId?: string;
+  asOf?: string;
+}): Promise<string> {
+  const token = getFigmaToken();
+  const fileKey = await getFileKey();
+
+  let url = `https://api.figma.com/v1/files/${fileKey}/comments`;
+  const params: string[] = [];
+  if (options?.asOf) params.push(`as_of=${encodeURIComponent(options.asOf)}`);
+  if (params.length) url += '?' + params.join('&');
+
+  const res = await fetch(url, {
+    headers: { 'X-Figma-Token': token },
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Figma API ${res.status}: ${body}`);
+  }
+
+  const data = await res.json() as {
+    comments: Array<{
+      id: string;
+      message: string;
+      created_at: string;
+      resolved_at: string | null;
+      user: { handle: string; img_url: string };
+      client_meta?: { node_id?: string; node_offset?: { x: number; y: number } };
+      order_id: string;
+      parent_id?: string;
+    }>;
+  };
+
+  // Filter by nodeId if specified
+  let comments = data.comments;
+  if (options?.nodeId) {
+    const targetId = options.nodeId;
+    comments = comments.filter(c =>
+      c.client_meta?.node_id === targetId ||
+      c.client_meta?.node_id?.replace(':', '-') === targetId.replace(':', '-')
+    );
+  }
+
+  // Format for readability
+  const formatted = comments.map(c => ({
+    id: c.id,
+    author: c.user.handle,
+    message: c.message,
+    createdAt: c.created_at,
+    resolved: !!c.resolved_at,
+    nodeId: c.client_meta?.node_id || null,
+    parentId: c.parent_id || null,
+  }));
+
+  return JSON.stringify(formatted, null, 2);
+}
+
+/** Post a comment to the Figma file via REST API */
+export async function postComment(message: string, options?: {
+  nodeId?: string;
+  replyTo?: string;
+}): Promise<string> {
+  const token = getFigmaToken();
+  const fileKey = await getFileKey();
+
+  const body: Record<string, any> = { message };
+  if (options?.replyTo) {
+    body.comment_id = options.replyTo;
+  } else if (options?.nodeId) {
+    // Format node_id for API (uses : separator)
+    const nid = options.nodeId.includes(':') ? options.nodeId : options.nodeId.replace('-', ':');
+    body.client_meta = { node_id: nid, node_offset: { x: 0, y: 0 } };
+  }
+
+  const res = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {
+    method: 'POST',
+    headers: {
+      'X-Figma-Token': token,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Figma API ${res.status}: ${text}`);
+  }
+
+  const comment = await res.json() as { id: string; message: string };
+  return JSON.stringify({ id: comment.id, message: comment.message, status: 'posted' });
+}
+
 // ---- Get Page Info ----
 
 export async function getPageInfo(): Promise<string> {

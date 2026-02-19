@@ -5,7 +5,7 @@
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { ensureConnected, executeFigmaCode, takeScreenshot, getPageInfo, listFigmaTabs, switchToTab, getActiveTabInfo } from './figma.js';
+import { ensureConnected, executeFigmaCode, takeScreenshot, getPageInfo, listFigmaTabs, switchToTab, getActiveTabInfo, getComments, postComment } from './figma.js';
 
 export function registerTools(server: McpServer) {
 
@@ -659,6 +659,89 @@ Font "Semi Bold" has a space (not "SemiBold") for Inter.`,
       }
       const result = await executeFigmaCode(code);
       return { content: [{ type: 'text', text: result }] };
+    }
+  );
+
+  // -- Tool: Get Comments --
+  server.tool(
+    'get_comments',
+    `Read comments from the current Figma file. Returns all comments with author, message, timestamp, and which node they're attached to. Requires FIGMA_TOKEN environment variable (personal access token from Figma Settings). Can filter by node ID to get comments on a specific element.`,
+    {
+      nodeId: z.string().optional().describe('Filter comments to a specific node ID (e.g., "311:1020"). Omit to get all comments.'),
+      includeResolved: z.boolean().optional().default(false).describe('Whether to include resolved/completed comments (default: false)'),
+    },
+    async ({ nodeId, includeResolved }) => {
+      try {
+        const result = await getComments({ nodeId });
+        let comments = JSON.parse(result);
+
+        if (!includeResolved) {
+          comments = comments.filter((c: any) => !c.resolved);
+        }
+
+        if (comments.length === 0) {
+          const scope = nodeId ? ` on node ${nodeId}` : '';
+          const resolved = includeResolved ? '' : ' unresolved';
+          return {
+            content: [{ type: 'text', text: `No${resolved} comments found${scope}.` }],
+          };
+        }
+
+        // Group replies under their parent comments
+        const topLevel = comments.filter((c: any) => !c.parentId);
+        const replies = comments.filter((c: any) => c.parentId);
+
+        const formatted = topLevel.map((c: any) => {
+          const threadReplies = replies.filter((r: any) => r.parentId === c.id);
+          let text = `💬 ${c.author} (${c.createdAt}):\n   "${c.message}"`;
+          if (c.nodeId) text += `\n   📌 Node: ${c.nodeId}`;
+          if (threadReplies.length > 0) {
+            text += '\n   Replies:';
+            for (const r of threadReplies) {
+              text += `\n     ↳ ${r.author}: "${r.message}"`;
+            }
+          }
+          return text;
+        });
+
+        return {
+          content: [{
+            type: 'text',
+            text: `${comments.length} comment(s) found:\n\n${formatted.join('\n\n')}`,
+          }],
+        };
+      } catch (err: any) {
+        return {
+          content: [{ type: 'text', text: `❌ ${err.message}` }],
+        };
+      }
+    }
+  );
+
+  // -- Tool: Post Comment --
+  server.tool(
+    'post_comment',
+    `Post a comment on the current Figma file. Can comment on a specific node or reply to an existing comment thread. Requires FIGMA_TOKEN environment variable.`,
+    {
+      message: z.string().describe('The comment text to post'),
+      nodeId: z.string().optional().describe('Node ID to attach the comment to (e.g., "311:1020")'),
+      replyTo: z.string().optional().describe('Comment ID to reply to (for threading)'),
+    },
+    async ({ message, nodeId, replyTo }) => {
+      try {
+        const result = await postComment(message, { nodeId, replyTo });
+        const parsed = JSON.parse(result);
+        return {
+          content: [{
+            type: 'text',
+            text: `✅ Comment posted (ID: ${parsed.id}): "${parsed.message}"`,
+          }],
+        };
+      } catch (err: any) {
+        return {
+          content: [{ type: 'text', text: `❌ ${err.message}` }],
+        };
+      }
     }
   );
 }
