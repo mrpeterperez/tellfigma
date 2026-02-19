@@ -41,15 +41,27 @@ tellfigma skips all that nonsense. It uses **Chrome DevTools Protocol** to talk 
 └─────────────────┘
 ```
 
-### The AI + Figma loop is finally complete 🔄
+### The full AI + Figma loop 🔄
 
 ```
-① tellfigma              AI  ──────►  Figma       "Design a dashboard"
-② Figma MCP Server       Figma ──────►  Code       "Build this design"
-③ Claude Code to Figma   Code  ──────►  Figma      "Capture this UI"
+  Your Code                    Figma
+     │                           ▲
+     │  reads tailwind,          │  creates & edits
+     │  components, tokens       │  designs live
+     ▼                           │
+   AI Agent ─────────────────────┘
+     ▲                           │
+     │  screenshots,             │
+     │  inspect, variables       │
+     └───────────────────────────┘
+            reads back
 ```
 
-tellfigma is **step ①** — the piece that was missing. Until now.
+tellfigma goes **both ways**. It writes designs, reads them back, takes screenshots, inspects nodes — and if you're in VS Code/Cursor/Claude Code, it reads your codebase first so designs match your actual tokens.
+
+Other tools in the ecosystem:
+- **Figma MCP Server** — reads designs for code generation (read-only)
+- **Claude Code to Figma** — captures running UI as Figma layers (one-time import)
 
 ---
 

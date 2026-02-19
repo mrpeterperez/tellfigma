@@ -14,7 +14,7 @@ import { registerTools } from './tools.js';
 
 const server = new McpServer({
   name: 'tellfigma',
-  version: '0.2.1',
+  version: '0.2.2',
 });
 
 // Register all prompts/resources and tools
