@@ -8,29 +8,42 @@
 <!-- 🎬 demo GIF coming soon — this is where the magic happens -->
 <!-- ![tellfigma demo](https://tellfigma.com/demo.gif) -->
 
-**Your AI just learned how to use Figma. You're welcome.**
+**The only Figma MCP that can actually create and edit designs. Not read-only. Not one-way. The real thing.**
 
-Every other Figma AI tool out there? Read-only. They can *look* at your designs. Wow, incredible, so can I. 👀
+Every other Figma AI tool? Read-only. They can *look* at your designs. Cool. So can my eyes. 👀
 
-tellfigma actually **writes** to Figma. Creates frames. Sets colors. Builds full pages. Takes screenshots. The whole damn thing.
+tellfigma **writes** to Figma. Creates frames. Builds full pages. Edits properties. Takes screenshots. Inspects everything. The whole loop.
 
 ```bash
 npx tellfigma
 ```
 
-One command. That's the whole setup.
+One command. No plugin. No API key. No OAuth dance.
 
 ---
 
 ## 🤔 Why does this exist?
 
-Because I got tired of copying hex codes between Figma and my code editor like some kind of unpaid intern.
+Real talk — I had to update **hundreds of components** in Figma. Create a ton of variable options for toggles, states, themes. The kind of repetitive bulk work that makes you question your career choices at 2 AM.
+
+So I built a script to do it. Just a quick hack — Chrome DevTools Protocol, talk to Figma's Plugin API, change everything in one shot instead of clicking 400 times.
+
+Then I realized: wait, what if I let an AI write the code instead of me?
+
+So I wired it up to Claude. Asked it to create a button. It created a button. Asked it to build a full settings page. It built a full settings page. Asked it to read my codebase first and match my design tokens. It did that too.
+
+That quick hack turned into tellfigma. The tool that was supposed to save me an afternoon ended up being something that actually understands what you want and designs it live in Figma.
+
+**It's not theoretical.** It works right now. You talk, Figma moves.
+
+### Why not just use [other tool]?
 
 Every Figma MCP tool I found was either:
-- **Read-only** — cool, thanks, very helpful, love that for me 🙃
-- **Plugin sandbox** — great, now I need a plugin + WebSocket + MCP server + a prayer
+- **Read-only** — congrats, your AI can describe a button. Groundbreaking. 🙃
+- **One-way import** — renders your UI as HTML, converts to Figma layers once, never touches Figma again
+- **Plugin sandbox** — needs a Figma plugin + WebSocket server + MCP server + configuration therapy
 
-tellfigma skips all that nonsense. It uses **Chrome DevTools Protocol** to talk directly to Figma's Plugin API. Same API the plugins use, minus the sandbox, minus the setup headaches.
+tellfigma skips all that. **Chrome DevTools Protocol** → direct access to the same `figma` Plugin API that plugins use → minus the sandbox, minus the setup, minus the existential dread.
 
 ```
 ┌─────────────────┐      MCP (stdio)       ┌──────────┐   Chrome DevTools   ┌──────────┐
@@ -41,7 +54,7 @@ tellfigma skips all that nonsense. It uses **Chrome DevTools Protocol** to talk 
 └─────────────────┘
 ```
 
-### The full AI + Figma loop 🔄
+### The full loop 🔄
 
 ```
   Your Code                    Figma
@@ -57,13 +70,13 @@ tellfigma skips all that nonsense. It uses **Chrome DevTools Protocol** to talk 
             reads back
 ```
 
-tellfigma goes **both ways**. It writes designs, reads them back, takes screenshots, inspects nodes — and if you're in VS Code/Cursor/Claude Code, it reads your codebase first so designs match your actual tokens.
+This is the part nobody else does. tellfigma goes **both ways**. It writes designs, reads them back, screenshots the result, and iterates. And if you're in VS Code or Cursor, it reads your actual codebase first — your colors, your spacing, your components — then designs to match.
 
-People keep asking for a tool that reads AND writes Figma, understands their design system, and works from any AI client. That's this. That's literally what this is.
+Not "generate a generic card." Generate YOUR card. With YOUR tokens. In YOUR Figma file. Live.
 
 Other tools in the ecosystem:
-- **Figma MCP Server (Dev Mode)** — reads designs for code generation. Read-only. Can't create or edit anything.
-- **Claude Code to Figma** — renders your running UI as HTML, then redraws it as Figma layers. One-way. One-time. Doesn't read Figma, doesn't iterate, only works with Claude Code. Basically the HTML2Design plugin with extra steps.
+- **Figma MCP Server (Dev Mode)** — reads designs for code generation. Legit useful for that. But read-only — can't create or edit anything.
+- **Claude Code to Figma** — captures your running UI as HTML, redraws it as Figma layers. One-way, one-time. Doesn't read Figma, doesn't iterate. Basically the HTML2Design plugin with extra steps.
 
 ---
 
@@ -89,7 +102,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
   "mcpServers": {
     "tellfigma": {
       "command": "npx",
-      "args": ["-y", "tellfigma"]
+      "args": ["-y", "tellfigma@latest"]
     }
   }
 }
@@ -102,7 +115,7 @@ Restart Claude Desktop.
 <summary><strong>Claude Code</strong></summary>
 
 ```bash
-claude mcp add tellfigma -- npx -y tellfigma
+claude mcp add tellfigma -- npx -y tellfigma@latest
 ```
 
 That's literally it.
@@ -119,7 +132,7 @@ Add to `.vscode/mcp.json`:
     "tellfigma": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "tellfigma"]
+      "args": ["-y", "tellfigma@latest"]
     }
   }
 }
@@ -136,7 +149,7 @@ Add to `~/.cursor/mcp.json`:
   "mcpServers": {
     "tellfigma": {
       "command": "npx",
-      "args": ["-y", "tellfigma"]
+      "args": ["-y", "tellfigma@latest"]
     }
   }
 }
@@ -153,7 +166,7 @@ Add to `~/.windsurf/mcp.json`:
   "mcpServers": {
     "tellfigma": {
       "command": "npx",
-      "args": ["-y", "tellfigma"]
+      "args": ["-y", "tellfigma@latest"]
     }
   }
 }
@@ -186,12 +199,13 @@ Also works with **FigJam boards**. 🧩
 
 ## 🛠️ What's under the hood
 
-### 16 MCP Tools
+### 17 MCP Tools
 
 | Tool | What it does |
 |------|-------------|
 | `execute_figma_code` | Run any JS with full `figma` Plugin API access — the big one 🔥 |
-| `take_screenshot` | Captures what's on screen — the AI actually *sees* your canvas |
+| `take_screenshot` | Live canvas screenshot — the AI actually *sees* what it made |
+| `connection_status` | Health check — is Chrome connected? Is Figma ready? |
 | `read_selection` | Deep inspect fills, strokes, effects, layout, fonts, children |
 | `get_page_context` | Page name, selection, top-level frames |
 | `select_nodes` | Find and select by name or type |
@@ -208,26 +222,29 @@ Also works with **FigJam boards**. 🧩
 
 ### Built-in design smarts 🧠
 
-tellfigma doesn't just blindly execute code. The AI gets a massive system prompt with:
+tellfigma doesn't just blindly run code. The AI gets a massive system prompt baked with everything it needs:
 
 - **Full Figma Plugin API reference** — every method, property, and gotcha
 - **Design recipes** — buttons, cards, inputs, navbars ready to compose
-- **Design system defaults** — 8px spacing scale, color ramps, type scale, shadow presets
-- **Error recovery** — "hey you forgot to load the font" hints that save you 10 minutes of debugging
-- **Auto-reconnect** — connection drops? No drama. Picks right back up.
+- **Design system defaults** — 8px grid, proper type scale, shadow presets, color ramps
+- **Error recovery** — "hey you forgot to load the font" / "layoutSizing goes AFTER appendChild" — the kind of hints that save 20 minutes of debugging
+- **Auto-reconnect** — connection drops? Picks right back up. No drama.
+- **Tool disambiguation** — if other read-only Figma MCPs are running alongside tellfigma, it knows to use its own write-capable tools instead of getting confused
 
 ### 🎯 Design from your actual codebase
 
-This one's nuts. If you're in VS Code, Cursor, or Claude Code, the AI already has your project files. So you can say:
+This is the part that blows people's minds. If you're in VS Code, Cursor, or Claude Code, the AI already has access to your project files. So you can say:
 
 > "Design a settings page that matches my app"
 
 And it will:
 1. Read your `tailwind.config.ts`, `globals.css`, component files
 2. Pull your **exact** colors, fonts, spacing, radius, shadows
-3. Design in Figma using YOUR tokens — not some generic blue from 2019
+3. Design in Figma using YOUR tokens — not some default blue from a Tailwind tutorial
 
-Works with **Tailwind**, **shadcn/ui**, **MUI**, **Chakra**, whatever you're running. No config. No flags. Your editor already knows your project.
+Your Figma design IS the spec. It matches the code because it came FROM the code.
+
+Works with **Tailwind**, **shadcn/ui**, **MUI**, **Chakra**, CSS variables, design tokens, whatever you're running. No config needed.
 
 ---
 
@@ -249,19 +266,18 @@ Your normal Chrome stays untouched. Pinky promise. 🤙
 
 | | tellfigma | Figma MCP (Dev Mode) | Claude Code to Figma | Plugin + WebSocket |
 |---|---|---|---|---|
-| **Creates designs** | ✅ yep | ❌ read-only | ❌ captures existing UI | ✅ |
+| **Creates designs** | ✅ | ❌ read-only | ❌ captures existing UI | ✅ |
 | **Edits designs** | ✅ | ❌ | ❌ one-time import | ✅ |
-| **Reads Figma back** | ✅ variables, styles, nodes | ✅ | ❌ nope | partial |
-| **Iterates on designs** | ✅ undo/redo/select/zoom | ❌ | ❌ one-shot dump | ✅ |
-| **Real screenshots** | ✅ | ✅ | N/A | ❌ |
+| **Reads Figma back** | ✅ variables, styles, nodes | ✅ | ❌ | partial |
+| **Iterates on designs** | ✅ undo/redo/screenshot/fix | ❌ | ❌ one-shot | ✅ |
+| **Real screenshots** | ✅ live canvas | ✅ | N/A | ❌ |
 | **Any MCP client** | ✅ all of them | ✅ | ❌ Claude Code only | ❌ |
-| **Design system aware** | ✅ reads your tokens | ❌ | ❌ | ❌ |
+| **Reads your codebase** | ✅ matches your tokens | ❌ | ❌ | ❌ |
 | **No API key** | ✅ zero keys | ❌ token required | ❌ OAuth required | ✅ |
 | **No plugin install** | ✅ | ❌ | ❌ | ❌ |
-| **Full Plugin API** | ✅ | ❌ | ❌ | partial |
+| **Full Plugin API** | ✅ createFrame, createText, everything | ❌ | ❌ | partial |
+| **Bulk operations** | ✅ change 400 things at once | ❌ | ❌ | ✅ |
 | **Setup** | `npx tellfigma` | config + token | server + OAuth | plugin + WS + MCP |
-
-Yeah. It's like that. 😎
 
 ---
 
@@ -302,10 +318,12 @@ PRs welcome. Open an issue first for big changes so we don't step on each other.
 
 ## License
 
-MIT — built by [Directive Labs](https://directivelabs.com) ⚡
+MIT — built by [Peter Perez](https://github.com/mrpeterperez) ⚡
+
+Started as a hacky script to bulk-edit hundreds of Figma components at 2 AM. Turned into this. Sometimes the best tools come from being too lazy to click.
 
 ---
 
 <p align="center">
-  <a href="https://tellfigma.com">tellfigma.com</a> · <a href="https://directivelabs.com">Directive Labs</a> · <a href="https://github.com/mrpeterperez/tellfigma">GitHub</a>
+  <a href="https://github.com/mrpeterperez/tellfigma">GitHub</a> · <a href="https://www.npmjs.com/package/tellfigma">npm</a>
 </p>
