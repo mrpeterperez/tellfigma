@@ -1,0 +1,54 @@
+{
+  "name": "tellfigma",
+  "version": "0.1.0",
+  "description": "Control Figma from any AI app. One command.",
+  "type": "module",
+  "bin": {
+    "tellfigma": "./bin/cli.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "figma",
+    "mcp",
+    "ai",
+    "design",
+    "chrome",
+    "devtools",
+    "claude",
+    "chatgpt",
+    "cursor",
+    "model-context-protocol"
+  ],
+  "author": "Directive Labs",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "chrome-remote-interface": "^0.34.0"
+  },
+  "devDependencies": {
+    "@types/chrome-remote-interface": "^0.33.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/directivelabs/tellfigma"
+  },
+  "homepage": "https://directivelabs.com"
+}
