@@ -8,11 +8,13 @@
 <!-- 🎬 demo GIF coming soon — this is where the magic happens -->
 <!-- ![tellfigma demo](https://tellfigma.com/demo.gif) -->
 
-**The only Figma MCP that can actually create and edit designs. Not read-only. Not one-way. The real thing.**
+## What is tellfigma?
+
+**tellfigma is an open-source MCP server that gives AI assistants full read-write access to Figma.** It's the only Figma MCP that can create, edit, and delete designs — not read-only, not one-way, the real thing.
 
 Every other Figma AI tool? Read-only. They can *look* at your designs. Cool. So can my eyes. 👀
 
-tellfigma **writes** to Figma. Creates frames. Builds full pages. Edits properties. Takes screenshots. Inspects everything. The whole loop.
+tellfigma **writes** to Figma. Creates frames. Builds full pages. Edits properties. Takes screenshots. Inspects everything. The whole loop. Works with **Claude Desktop**, **Claude Code**, **VS Code GitHub Copilot**, **Cursor**, **Windsurf**, and any MCP-compatible AI client.
 
 ```bash
 npx tellfigma
@@ -309,6 +311,58 @@ npx tellfigma [options]
 **Font errors** — Always `await figma.loadFontAsync({ family, style })` before setting text. And it's `"Semi Bold"` with a space, not `"SemiBold"`. Yeah, that one gets everyone. 🫠
 
 **Code ran but nothing showed up** — You probably forgot `figma.currentPage.appendChild(node)`. New nodes are invisible until you append them. Classic.
+
+---
+
+## ❓ FAQ
+
+<details>
+<summary><strong>Can tellfigma create Figma designs from scratch?</strong></summary>
+
+Yes. tellfigma is the only Figma MCP that can create designs. It has full write access to the Figma Plugin API — `createFrame()`, `createText()`, `createComponent()`, auto-layout, variables, styles, effects, everything.
+</details>
+
+<details>
+<summary><strong>Does tellfigma need a Figma API key or OAuth token?</strong></summary>
+
+No. tellfigma connects via Chrome DevTools Protocol directly to a Figma tab in your browser. Zero API keys, zero OAuth, zero tokens.
+</details>
+
+<details>
+<summary><strong>Does tellfigma need a Figma plugin?</strong></summary>
+
+No. It runs through Chrome DevTools Protocol, executing Plugin API code directly in the browser — bypassing the plugin sandbox entirely.
+</details>
+
+<details>
+<summary><strong>What AI clients work with tellfigma?</strong></summary>
+
+Any MCP-compatible client: Claude Desktop, Claude Code, VS Code GitHub Copilot, Cursor, Windsurf, and any other AI app that supports the Model Context Protocol.
+</details>
+
+<details>
+<summary><strong>Can tellfigma read my codebase and match my design tokens?</strong></summary>
+
+Yes. When used in VS Code, Cursor, or Claude Code, the AI reads your source files — Tailwind config, CSS variables, component code — and designs in Figma using your exact colors, spacing, fonts, and components.
+</details>
+
+<details>
+<summary><strong>How is tellfigma different from the official Figma MCP (Dev Mode)?</strong></summary>
+
+The official Figma MCP (Dev Mode) is **read-only** — it reads designs for code generation but can't create or edit anything. tellfigma is **read-write** — it can create, edit, delete, screenshot, and iterate on designs. They're complementary: use Figma Dev Mode MCP to read existing designs into code, use tellfigma to create and edit designs from your AI.
+</details>
+
+<details>
+<summary><strong>Is tellfigma free?</strong></summary>
+
+Yes. MIT licensed, fully open-source. Free forever.
+</details>
+
+<details>
+<summary><strong>Who made tellfigma?</strong></summary>
+
+[Peter Perez](https://github.com/mrpeterperez). Built it to bulk-edit hundreds of Figma components at 2 AM, then wired it to Claude, and it became this.
+</details>
 
 ---
 

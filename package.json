@@ -1,6 +1,6 @@
 {
   "name": "tellfigma",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "MCP server that gives AI apps (Claude, Cursor, VS Code Copilot, Windsurf) full CREATE/EDIT/DELETE control over Figma via Chrome DevTools Protocol. The only Figma MCP that can modify designs. No plugin, no API key — just npx tellfigma.",
   "type": "module",
   "bin": {
@@ -61,7 +61,8 @@
     "dist",
     "bin",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "llms.txt"
   ],
   "repository": {
     "type": "git",
