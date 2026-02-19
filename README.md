@@ -59,9 +59,11 @@ tellfigma skips all that nonsense. It uses **Chrome DevTools Protocol** to talk 
 
 tellfigma goes **both ways**. It writes designs, reads them back, takes screenshots, inspects nodes — and if you're in VS Code/Cursor/Claude Code, it reads your codebase first so designs match your actual tokens.
 
+People keep asking for a tool that reads AND writes Figma, understands their design system, and works from any AI client. That's this. That's literally what this is.
+
 Other tools in the ecosystem:
-- **Figma MCP Server** — reads designs for code generation (read-only)
-- **Claude Code to Figma** — captures running UI as Figma layers (one-time import)
+- **Figma MCP Server (Dev Mode)** — reads designs for code generation. Read-only. Can't create or edit anything.
+- **Claude Code to Figma** — renders your running UI as HTML, then redraws it as Figma layers. One-way. One-time. Doesn't read Figma, doesn't iterate, only works with Claude Code. Basically the HTML2Design plugin with extra steps.
 
 ---
 
@@ -249,8 +251,11 @@ Your normal Chrome stays untouched. Pinky promise. 🤙
 |---|---|---|---|---|
 | **Creates designs** | ✅ yep | ❌ read-only | ❌ captures existing UI | ✅ |
 | **Edits designs** | ✅ | ❌ | ❌ one-time import | ✅ |
+| **Reads Figma back** | ✅ variables, styles, nodes | ✅ | ❌ nope | partial |
+| **Iterates on designs** | ✅ undo/redo/select/zoom | ❌ | ❌ one-shot dump | ✅ |
 | **Real screenshots** | ✅ | ✅ | N/A | ❌ |
-| **Any MCP client** | ✅ all of them | ✅ | ❌ Claude only | ❌ |
+| **Any MCP client** | ✅ all of them | ✅ | ❌ Claude Code only | ❌ |
+| **Design system aware** | ✅ reads your tokens | ❌ | ❌ | ❌ |
 | **No API key** | ✅ zero keys | ❌ token required | ❌ OAuth required | ✅ |
 | **No plugin install** | ✅ | ❌ | ❌ | ❌ |
 | **Full Plugin API** | ✅ | ❌ | ❌ | partial |
