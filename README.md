@@ -142,18 +142,37 @@ Open your AI app and try:
 
 ## Tools
 
-tellfigma exposes 6 MCP tools:
+tellfigma exposes 16 MCP tools:
 
 | Tool | Description |
 |------|-------------|
 | `execute_figma_code` | Run JavaScript in the Figma browser tab with full access to the `figma` global (Plugin API) |
-| `take_screenshot` | Capture a screenshot of the current Figma view — the AI can see and reason about the design |
+| `take_screenshot` | Capture a screenshot of the current Figma view — the AI sees and reasons about the design |
+| `read_selection` | Deep inspect selected nodes — fills, strokes, effects, fonts, layout, children, everything |
 | `get_page_context` | Get the current page name, selected nodes, and top-level frames |
+| `select_nodes` | Find and select nodes by name or type (FRAME, TEXT, COMPONENT, etc.) |
+| `list_components` | List all components and component sets on the page |
+| `get_styles` | List all local paint, text, and effect styles in the file |
+| `get_variables` | List Figma variables (design tokens) — colors, numbers, strings |
+| `export_node` | Export any node as PNG, SVG, JPG, or PDF at configurable scale |
+| `duplicate_node` | Clone a node with offset and count — great for grids and repeating elements |
+| `undo` / `redo` | Roll back or redo actions with configurable step count |
+| `zoom_to` | Zoom the viewport to selection, all nodes, or a specific node |
 | `navigate` | Navigate Chrome to a URL (e.g., open a specific Figma file) |
 | `click` | Click at specific coordinates on the page |
 | `get_snapshot` | Get the accessibility tree of the page for understanding UI structure |
 
-The AI also receives a comprehensive system prompt with the full Figma Plugin API reference, common mistakes to avoid, and workflow best practices.
+The AI also receives a comprehensive system prompt with the full Figma Plugin API reference, design recipes (buttons, cards, inputs, navbars), a complete design system with default spacing/color scales, common mistakes to avoid, and workflow best practices.
+
+### Built-in Design Intelligence
+
+tellfigma doesn't just execute code — it understands design. The system prompt includes:
+
+- **Design recipes** — Button, Card, Input, Navbar patterns the AI can compose and customize
+- **Design system defaults** — 8px spacing scale, Tailwind-inspired colors, type scale, shadow presets
+- **Smart error recovery** — Hints for common Figma API mistakes (missing fonts, layout ordering, etc.)
+- **Auto-reconnect** — Drops the CDP connection? It picks back up on the next tool call
+- **Deep inspect** — `read_selection` gives the AI full CSS-like property readout before making edits
 
 ## Why Chrome DevTools?
 
