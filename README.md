@@ -1,8 +1,12 @@
 # tellfigma
 
 [![npm version](https://img.shields.io/npm/v/tellfigma.svg)](https://www.npmjs.com/package/tellfigma)
+[![npm downloads](https://img.shields.io/npm/dm/tellfigma.svg)](https://www.npmjs.com/package/tellfigma)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
+
+<!-- 🎬 Add a demo GIF here — this is the #1 thing that makes repos go viral on GitHub/Twitter/Reddit -->
+<!-- ![tellfigma demo](https://tellfigma.com/demo.gif) -->
 
 **MCP server that gives AI full control over Figma. Create and edit designs from natural language.**
 
@@ -259,3 +263,9 @@ PRs welcome. Please open an issue first for major changes.
 ## License
 
 MIT — [Directive Labs](https://directivelabs.com)
+
+---
+
+<p align="center">
+  <a href="https://tellfigma.com">tellfigma.com</a> · <a href="https://directivelabs.com">Directive Labs</a> · <a href="https://github.com/mrpeterperez/tellfigma">GitHub</a>
+</p>
