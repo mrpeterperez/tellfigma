@@ -3,11 +3,6 @@
 // ============================================================
 // tellfigma CLI — Control Figma from any AI app. One command.
 // ============================================================
-// Usage:
-//   npx tellfigma                         # Start with defaults
-//   npx tellfigma --port 9222             # Custom Chrome debug port
-//   npx tellfigma --no-launch             # Don't launch Chrome (connect to existing)
-// ============================================================
 
 import { startServer } from '../dist/index.js';
 
@@ -27,59 +22,66 @@ for (let i = 0; i < args.length; i++) {
 }
 
 if (showHelp) {
-  console.log(`
-  tellfigma — Control Figma from any AI app. One command.
+  const help = `
+  ┌─────────────────────────────────────────────────┐
+  │  tellfigma — AI-powered Figma control           │
+  │  Create, edit & inspect designs from any AI app  │
+  └─────────────────────────────────────────────────┘
 
-  Usage:
-    npx tellfigma [options]
+  Usage:  npx tellfigma [options]
 
   Options:
     --port <number>   Chrome debug port (default: 9222)
     --help, -h        Show this help
 
-  Setup:
-    1. Run this command: npx tellfigma
-    2. Log into Figma in the Chrome window that opens
-    3. Open a design file
-    4. Add tellfigma to your AI app's MCP config:
+  ─── Quick Start (30 seconds) ────────────────────
 
-       Claude Desktop (~/.claude/claude_desktop_config.json):
-       {
-         "mcpServers": {
-           "tellfigma": {
-             "command": "npx",
-             "args": ["-y", "tellfigma"]
-           }
-         }
-       }
+  Step 1: Run tellfigma
+    $ npx tellfigma
 
-       Claude Code:
-       claude mcp add tellfigma -- npx -y tellfigma
+  Step 2: Add to your AI app
 
-       VS Code (.vscode/mcp.json):
-       {
-         "servers": {
-           "tellfigma": {
-             "type": "stdio",
-             "command": "npx",
-             "args": ["-y", "tellfigma"]
-           }
-         }
-       }
+    VS Code / Cursor (.vscode/mcp.json):
+    {
+      "servers": {
+        "tellfigma": {
+          "type": "stdio",
+          "command": "npx",
+          "args": ["-y", "tellfigma@latest"]
+        }
+      }
+    }
 
-    5. Chat with your AI — it now controls Figma!
+    Claude Desktop (~/.claude/claude_desktop_config.json):
+    {
+      "mcpServers": {
+        "tellfigma": {
+          "command": "npx",
+          "args": ["-y", "tellfigma@latest"]
+        }
+      }
+    }
 
-  Examples:
-    "Create a card component with a shadow and rounded corners"
-    "Design a login page with email and password fields"
-    "Find all text on this page and list their font sizes"
+    Claude Code:
+    $ claude mcp add tellfigma -- npx -y tellfigma@latest
 
-  More info: https://github.com/mrpeterperez/tellfigma
-`);
+  Step 3: Open a Figma design file in Chrome. Done.
+
+  ─── Try These ───────────────────────────────────
+
+    "Create a login page with email and password"
+    "Build a card component with shadow and rounded corners"
+    "Screenshot this and recreate it pixel-perfect"
+    "Read my codebase and design matching Figma screens"
+
+  ─────────────────────────────────────────────────
+  Docs: https://github.com/mrpeterperez/tellfigma
+`;
+  console.log(help);
   process.exit(0);
 }
 
-// ASCII banner
+// ASCII banner + status
 process.stderr.write(`
 ╔═══════════════════════════════════════════════════╗
 ║                                                   ║
@@ -92,7 +94,51 @@ process.stderr.write(`
 ╚═══════════════════════════════════════════════════╝
 `);
 
-startServer(port).catch((err) => {
-  process.stderr.write(`\n[tellfigma] Error: ${err.message}\n`);
-  process.exit(1);
-});
+startServer(port)
+  .then(({ launched, figmaReady }) => {
+    // Post-connection onboarding tips
+    const tips = [];
+
+    if (launched) {
+      tips.push('  ✦ Chrome launched — log into Figma and open a design file');
+    }
+
+    if (!figmaReady) {
+      tips.push('  ✦ Open a Figma design file in Chrome');
+      tips.push('  ✦ If figma API is unavailable: open any plugin (e.g. Iconify), close it');
+    }
+
+    if (tips.length > 0) {
+      process.stderr.write('\n┌─── Getting Started ───────────────────────────┐\n');
+      tips.forEach(t => process.stderr.write(`│ ${t.padEnd(47)}│\n`));
+      process.stderr.write('│                                                │\n');
+      process.stderr.write('│  Once Figma is open, your AI app handles the   │\n');
+      process.stderr.write('│  rest. Just chat naturally:                     │\n');
+      process.stderr.write('│                                                │\n');
+      process.stderr.write('│  "Design a settings page for my app"           │\n');
+      process.stderr.write('│  "Create a button component"                   │\n');
+      process.stderr.write('│                                                │\n');
+      process.stderr.write('└────────────────────────────────────────────────┘\n\n');
+    } else {
+      process.stderr.write('\n  ✅ Connected & ready — your AI app can now control Figma!\n\n');
+    }
+  })
+  .catch((err) => {
+    process.stderr.write(`\n  ❌ ${err.message}\n`);
+
+    // Smart error help
+    if (err.message.includes('Chrome not found')) {
+      process.stderr.write('\n  Fix: Install Google Chrome, or set CHROME_PATH:\n');
+      process.stderr.write('    export CHROME_PATH="/path/to/chrome"\n\n');
+    } else if (err.message.includes('debug port')) {
+      process.stderr.write('\n  Fix: Chrome may already be running without debug mode.\n');
+      process.stderr.write('    1. Quit Chrome completely\n');
+      process.stderr.write('    2. Run: npx tellfigma\n');
+      process.stderr.write('    (tellfigma will launch Chrome with the right flags)\n\n');
+    } else if (err.message.includes('No Figma tab')) {
+      process.stderr.write('\n  Fix: Open a Figma design file in Chrome:\n');
+      process.stderr.write('    https://www.figma.com → pick any file → open it\n\n');
+    }
+
+    process.exit(1);
+  });
