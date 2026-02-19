@@ -170,7 +170,15 @@ Just talk to your AI like a normal human:
 
 > "Create a card component with a subtle shadow, 16px padding, and 12px corners"
 
-It just... does it. In Figma. Live. 🤯
+> "List all the variables and styles in this file"
+
+> "Select every frame named 'Card' and read their properties"
+
+> "Export the header component as SVG"
+
+Creating, reading, inspecting, exporting — it does all of it. In Figma. Live. 🤯
+
+Also works with **FigJam boards**. 🧩
 
 ---
 
@@ -218,14 +226,6 @@ And it will:
 3. Design in Figma using YOUR tokens — not some generic blue from 2019
 
 Works with **Tailwind**, **shadcn/ui**, **MUI**, **Chakra**, whatever you're running. No config. No flags. Your editor already knows your project.
-
-```
-┌──────────┐     reads     ┌───────────┐    designs    ┌────────┐
-│ Your Code │ ────────────► │  AI Agent  │ ────────────► │ Figma  │
-│ (editor)  │  tailwind,   │ (Copilot/  │  your exact  │ canvas │
-│           │  components  │  Claude)   │  tokens      │        │
-└──────────┘              └───────────┘               └────────┘
-```
 
 ---
 
@@ -280,6 +280,8 @@ npx tellfigma [options]
 **"No Figma tab found"** — Open a Figma design file in the Chrome window that tellfigma launched. Needs `figma.com/design` or `figma.com/file` in the URL.
 
 **"Chrome debug port didn't become available"** — Something else is hogging port 9222. Try `npx tellfigma --port 9333` or kill the squatter.
+
+**Chrome not found (Windows/Linux)** — Set the `CHROME_PATH` environment variable to your Chrome executable path. e.g. `CHROME_PATH="/usr/bin/google-chrome" npx tellfigma`
 
 **"Connection lost, reconnecting..."** — Totally normal. Auto-reconnects on the next tool call. If it keeps happening, reload the Figma tab.
 
