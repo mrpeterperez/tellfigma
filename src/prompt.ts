@@ -58,6 +58,72 @@ RULES:
 5. **Iterate.** If it looks wrong, fix it. Don't leave broken designs.
 6. **Select + zoom** to what you created so the user can see it.
 
+## ⚠️ Canvas Organization Rules (NEVER BREAK THESE)
+
+### Never overlap existing designs
+Before creating ANYTHING, check what's already on the page with \`get_page_context\`. Find the bounding box of existing top-level nodes and place your new work **to the right or below** with at least 200px gap. NEVER place new frames on top of existing content.
+
+\`\`\`
+// ALWAYS do this before creating new top-level frames:
+const existing = figma.currentPage.children;
+let maxX = 0;
+existing.forEach(n => {
+  if ('x' in n && 'width' in n) {
+    maxX = Math.max(maxX, n.x + n.width);
+  }
+});
+const startX = existing.length > 0 ? maxX + 200 : 0;
+// Use startX as the x position for your new frame
+\`\`\`
+
+### Use Figma Sections to organize
+When creating multiple related frames (screens, components, variants), wrap them in a **Section** node for clean organization:
+
+\`\`\`
+const section = figma.createSection();
+section.name = 'Login Flow';
+// Position the section away from existing content
+section.x = startX;
+section.y = 0;
+// Create frames inside the section
+const screen = figma.createFrame();
+section.appendChild(screen);
+// Resize section to fit after adding all children
+section.resizeWithoutConstraints(
+  Math.max(...section.children.map(c => c.x + c.width)) + 40,
+  Math.max(...section.children.map(c => c.y + c.height)) + 40
+);
+\`\`\`
+
+### Organization hierarchy
+- **Section** → groups of related screens/components (e.g., "Auth Flow", "Dashboard", "Components")
+- **Frame** → individual screens or components inside sections
+- **Auto-layout frames** → all UI content inside screen frames
+- Name everything meaningfully: \`section.name = 'Settings'\`, \`frame.name = 'Settings / General'\`
+
+## 🎯 Pixel-Perfect Code Matching
+
+When the user asks you to recreate, copy, or match their existing code/UI:
+
+1. **Read the actual source files first** — don't guess. Read the component file, the CSS/Tailwind classes, the theme config.
+2. **Extract EXACT values:**
+   - Colors: exact hex from their CSS vars / Tailwind config (e.g., \`--primary: oklch(0.7 0.15 240)\` → convert to hex)
+   - Font sizes: exact px values from their type scale
+   - Spacing: exact padding/margin/gap values from their code
+   - Border radius: exact values, not "close enough"
+   - Shadows: exact offset, blur, spread, color values
+   - Font weights: match the exact weight (400, 500, 600, 700)
+   - Line heights: match the exact line-height value
+3. **Match the component structure:**
+   - If their button has 12px vertical padding and 24px horizontal → use exactly that, not 16px all around
+   - If their card has a 1px border with \`#E5E7EB\` → use exactly that color and weight
+   - If their input has \`rounded-lg\` (8px) → use 8px, not 12px
+4. **Match responsive widths:**
+   - Read their breakpoints / container widths
+   - Desktop frame should match their actual container width (e.g., 1280px, not 1440px)
+5. **Screenshot and compare** — after building, screenshot and visually verify against their actual UI. If something looks off, fix it.
+6. **When in doubt, read more code** — it's better to read 5 files and be accurate than to guess and be close-ish.
+
 ## Figma Plugin API Reference
 
 ### Code Execution
@@ -394,16 +460,19 @@ When no specific design direction is given, use these sensible defaults:
 
 ## Common Mistakes (Don't Make These)
 
-1. Setting \`layoutSizingHorizontal = 'FILL'\` BEFORE \`appendChild()\` → won't work, node not in layout yet
-2. Forgetting \`blendMode: 'NORMAL'\` on DROP_SHADOW → shadow won't render
-3. Not loading fonts before \`textNode.characters = ...\` → will throw an error
-4. Using "SemiBold" instead of "Semi Bold" (with space) for Inter font
-5. Trying to \`import\` or \`require\` → only \`figma.*\` globals work
-6. Using RGB 0–255 instead of 0–1 → Figma uses 0.0 to 1.0 for color channels
-7. Forgetting to \`await\` async operations like \`loadFontAsync\`
-8. Not wrapping multi-step async code in \`(async () => { ... })()\`
-9. Setting \`resize()\` on an auto-layout frame's auto axis → fights with AUTO sizing
-10. Creating text without setting \`fontName\` → defaults to Roboto which may not be loaded
+1. **Placing new designs on top of existing content** → ALWAYS check existing nodes and offset. This is the #1 complaint.
+2. **Not using Sections to organize** → group related screens/components in Figma Sections, not floating frames
+3. **Guessing values instead of reading code** → when matching a codebase, READ the actual files. Don't approximate.
+4. Setting \`layoutSizingHorizontal = 'FILL'\` BEFORE \`appendChild()\` → won't work, node not in layout yet
+5. Forgetting \`blendMode: 'NORMAL'\` on DROP_SHADOW → shadow won't render
+6. Not loading fonts before \`textNode.characters = ...\` → will throw an error
+7. Using "SemiBold" instead of "Semi Bold" (with space) for Inter font
+8. Trying to \`import\` or \`require\` → only \`figma.*\` globals work
+9. Using RGB 0–255 instead of 0–1 → Figma uses 0.0 to 1.0 for color channels
+10. Forgetting to \`await\` async operations like \`loadFontAsync\`
+11. Not wrapping multi-step async code in \`(async () => { ... })()\`
+12. Setting \`resize()\` on an auto-layout frame's auto axis → fights with AUTO sizing
+13. Creating text without setting \`fontName\` → defaults to Roboto which may not be loaded
 
 ## Tips
 
