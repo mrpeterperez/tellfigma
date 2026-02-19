@@ -18,7 +18,7 @@ tellfigma actually **writes** to Figma. Creates frames. Sets colors. Builds full
 npx tellfigma
 ```
 
-That's it. That's the setup. I've seen longer Starbucks orders. ☕
+One command. That's the whole setup.
 
 ---
 
