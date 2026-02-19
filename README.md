@@ -140,6 +140,31 @@ Open your AI app and try:
 
 > "Take a screenshot and tell me what you think of the design"
 
+## Design From Your Codebase
+
+If you're using VS Code, Cursor, or Claude Code, the AI already has access to your project files. tellfigma uses this to **design Figma screens that match your actual codebase** — your colors, your fonts, your component patterns.
+
+Just tell the AI:
+
+> "Design a settings page that matches my app's design system"
+
+It will:
+1. Read your `tailwind.config.ts`, `globals.css`, component files
+2. Extract your exact colors, fonts, spacing, border radius, shadows
+3. Create Figma designs using YOUR design tokens — not generic defaults
+
+Works automatically with **Tailwind CSS**, **CSS variables**, **shadcn/ui**, **MUI**, **Chakra**, and any component library. The AI reads your code first, then designs to match.
+
+```
+┌──────────────┐     reads      ┌────────────────┐     designs     ┌────────┐
+│  Your Code   │ ──────────────► │    AI Agent     │ ──────────────► │ Figma  │
+│  (VS Code)   │   tailwind,    │ (Copilot/Claude │   exact same   │ canvas │
+│              │   components   │   Code/Cursor)  │   tokens       │        │
+└──────────────┘                └────────────────┘                 └────────┘
+```
+
+No config needed. No project path flags. Your editor already knows your project.
+
 ## Tools
 
 tellfigma exposes 16 MCP tools:
