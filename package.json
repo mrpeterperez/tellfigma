@@ -1,7 +1,7 @@
 {
   "name": "tellfigma",
   "version": "0.2.0",
-  "description": "The missing piece: AI that designs directly in Figma. No plugin, no API key. One command.",
+  "description": "MCP server that gives AI apps (Claude, Cursor, VS Code Copilot, Windsurf) full control over Figma via Chrome DevTools Protocol. Create and edit designs from natural language. No plugin, no API key — just npx tellfigma.",
   "type": "module",
   "bin": {
     "tellfigma": "./bin/cli.js"
@@ -16,30 +16,36 @@
   "keywords": [
     "figma",
     "mcp",
+    "mcp-server",
+    "model-context-protocol",
     "ai",
     "design",
-    "chrome",
-    "devtools",
+    "chrome-devtools-protocol",
+    "cdp",
     "claude",
+    "claude-desktop",
     "claude-code",
     "claude-code-to-figma",
-    "chatgpt",
     "cursor",
     "windsurf",
     "vscode",
     "copilot",
-    "model-context-protocol",
+    "github-copilot",
     "figma-mcp",
     "figma-plugin-api",
+    "figma-automation",
     "design-to-code",
     "code-to-design",
     "ai-design",
-    "generative-design"
+    "generative-design",
+    "design-system",
+    "ui-design",
+    "figma-ai",
+    "npx"
   ],
   "author": "Directive Labs",
   "license": "MIT",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "chrome-remote-interface": "^0.34.0"
   },
@@ -59,7 +65,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/directivelabs/tellfigma"
+    "url": "git+https://github.com/mrpeterperez/tellfigma.git"
   },
-  "homepage": "https://directivelabs.com"
+  "bugs": {
+    "url": "https://github.com/mrpeterperez/tellfigma/issues"
+  },
+  "homepage": "https://github.com/mrpeterperez/tellfigma#readme",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/mrpeterperez"
+  }
 }

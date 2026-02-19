@@ -1,53 +1,57 @@
 # tellfigma
 
-**The missing piece: AI that designs directly in Figma. One command.**
+[![npm version](https://img.shields.io/npm/v/tellfigma.svg)](https://www.npmjs.com/package/tellfigma)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
 
-Figma's MCP server reads designs for code generation. [Claude Code to Figma](https://www.figma.com/blog/introducing-claude-code-to-figma/) captures running code as Figma layers. **tellfigma closes the loop** — your AI creates and edits designs directly on the Figma canvas.
+**MCP server that gives AI full control over Figma. Create and edit designs from natural language.**
 
-tellfigma is an [MCP server](https://modelcontextprotocol.io) that gives your AI full control over Figma — create designs from scratch, modify layouts, inspect elements, and take screenshots — all through natural conversation.
+> Figma's MCP reads designs. **tellfigma writes them.**
 
-No Figma API key. No plugin to install. No complex setup. Just `npx tellfigma`.
-
-### The Full AI + Figma Loop
-
-```
-① tellfigma              AI  ──────►  Figma       "Design a dashboard"
-② Figma MCP Server       Figma ──────►  Code        "Build this design"
-③ Claude Code to Figma   Code  ──────►  Figma       "Capture this UI"
-```
-
-## How It Works
-
-```
-┌─────────────────┐       MCP (stdio)       ┌──────────┐    Chrome DevTools    ┌──────────┐
-│  Claude Desktop  │ ◄──────────────────────► │ tellfigma │ ◄─────────────────► │  Chrome   │
-│  Claude Code     │                          │  (local)  │    Protocol (CDP)   │  + Figma  │
-│  VS Code Copilot │                          └──────────┘                      └──────────┘
-│  Cursor / etc.   │
-└─────────────────┘
-```
-
-tellfigma launches a Chrome instance with the DevTools Protocol enabled, connects to it, and exposes Figma's full Plugin API as MCP tools. Your AI app talks to tellfigma over stdio — no API keys, no cloud, everything runs locally.
-
-This is fundamentally different from other Figma MCP servers:
-- **No Figma REST API** — direct browser access means full read/write capability
-- **No plugin sandbox** — execute any JavaScript directly in the Figma context
-- **Real screenshots** — the AI actually sees what you see
-- **One piece** — no plugin + WebSocket + server combo to manage
-
-## Quick Start
-
-### 1. Install & Launch
+One command. No Figma API key. No plugin. Works with Claude Desktop, Claude Code, VS Code Copilot, Cursor, Windsurf — any MCP client.
 
 ```bash
 npx tellfigma
 ```
 
-This opens a Chrome window. Log into Figma and open a design file.
+---
 
-### 2. Connect Your AI App
+## Why tellfigma?
 
-Pick your AI app and add the MCP config:
+Every other Figma AI tool is **read-only** or **sandboxed**. tellfigma is the only MCP server that uses **Chrome DevTools Protocol** to give AI full read/write access to Figma's Plugin API — the same API that Figma plugins use, but without the sandbox.
+
+```
+┌─────────────────┐      MCP (stdio)       ┌──────────┐   Chrome DevTools   ┌──────────┐
+│  Claude Desktop  │ ◄────────────────────► │ tellfigma │ ◄────────────────► │  Chrome   │
+│  Claude Code     │                        │  (local)  │   Protocol (CDP)   │ + Figma   │
+│  VS Code Copilot │                        └──────────┘                     └──────────┘
+│  Cursor / etc.   │
+└─────────────────┘
+```
+
+### The AI + Figma Loop
+
+```
+① tellfigma              AI  ──────►  Figma       "Design a dashboard"
+② Figma MCP Server       Figma ──────►  Code       "Build this design"
+③ Claude Code to Figma   Code  ──────►  Figma      "Capture this UI"
+```
+
+tellfigma is **step ①** — the missing piece that lets AI create and modify Figma designs from scratch.
+
+---
+
+## Quick Start
+
+### 1. Run tellfigma
+
+```bash
+npx tellfigma
+```
+
+A Chrome window opens. Sign into Figma and open a design file.
+
+### 2. Add to your AI app
 
 <details>
 <summary><strong>Claude Desktop</strong></summary>
@@ -79,7 +83,7 @@ claude mcp add tellfigma -- npx -y tellfigma
 <details>
 <summary><strong>VS Code (GitHub Copilot)</strong></summary>
 
-Add to `.vscode/mcp.json` in your workspace:
+Add to `.vscode/mcp.json`:
 
 ```json
 {
@@ -128,98 +132,102 @@ Add to `~/.windsurf/mcp.json`:
 ```
 </details>
 
-### 3. Start Designing
+### 3. Start designing
 
-Open your AI app and try:
+Tell your AI what to create:
 
-> "Create a modern login page with email and password fields, a sign-in button, and a 'Forgot password?' link"
+> "Design a modern login page with email and password fields, a sign-in button, and a 'Forgot password?' link"
 
-> "Add a drop shadow to the selected frame and round the corners to 12px"
+> "Take a screenshot and give me feedback on the spacing and hierarchy"
 
-> "Find all text nodes on this page and list their font sizes"
+> "Find all text nodes on this page and make them use Inter Semi Bold"
 
-> "Take a screenshot and tell me what you think of the design"
+> "Create a card component with a subtle shadow, 16px padding, and 12px border radius"
 
-## Design From Your Codebase
+---
 
-If you're using VS Code, Cursor, or Claude Code, the AI already has access to your project files. tellfigma uses this to **design Figma screens that match your actual codebase** — your colors, your fonts, your component patterns.
+## Features
 
-Just tell the AI:
+### 16 MCP Tools
 
-> "Design a settings page that matches my app's design system"
-
-It will:
-1. Read your `tailwind.config.ts`, `globals.css`, component files
-2. Extract your exact colors, fonts, spacing, border radius, shadows
-3. Create Figma designs using YOUR design tokens — not generic defaults
-
-Works automatically with **Tailwind CSS**, **CSS variables**, **shadcn/ui**, **MUI**, **Chakra**, and any component library. The AI reads your code first, then designs to match.
-
-```
-┌──────────────┐     reads      ┌────────────────┐     designs     ┌────────┐
-│  Your Code   │ ──────────────► │    AI Agent     │ ──────────────► │ Figma  │
-│  (VS Code)   │   tailwind,    │ (Copilot/Claude │   exact same   │ canvas │
-│              │   components   │   Code/Cursor)  │   tokens       │        │
-└──────────────┘                └────────────────┘                 └────────┘
-```
-
-No config needed. No project path flags. Your editor already knows your project.
-
-## Tools
-
-tellfigma exposes 16 MCP tools:
-
-| Tool | Description |
+| Tool | What it does |
 |------|-------------|
-| `execute_figma_code` | Run JavaScript in the Figma browser tab with full access to the `figma` global (Plugin API) |
-| `take_screenshot` | Capture a screenshot of the current Figma view — the AI sees and reasons about the design |
-| `read_selection` | Deep inspect selected nodes — fills, strokes, effects, fonts, layout, children, everything |
-| `get_page_context` | Get the current page name, selected nodes, and top-level frames |
-| `select_nodes` | Find and select nodes by name or type (FRAME, TEXT, COMPONENT, etc.) |
-| `list_components` | List all components and component sets on the page |
-| `get_styles` | List all local paint, text, and effect styles in the file |
-| `get_variables` | List Figma variables (design tokens) — colors, numbers, strings |
-| `export_node` | Export any node as PNG, SVG, JPG, or PDF at configurable scale |
-| `duplicate_node` | Clone a node with offset and count — great for grids and repeating elements |
-| `undo` / `redo` | Roll back or redo actions with configurable step count |
-| `zoom_to` | Zoom the viewport to selection, all nodes, or a specific node |
-| `navigate` | Navigate Chrome to a URL (e.g., open a specific Figma file) |
-| `click` | Click at specific coordinates on the page |
-| `get_snapshot` | Get the accessibility tree of the page for understanding UI structure |
-
-The AI also receives a comprehensive system prompt with the full Figma Plugin API reference, design recipes (buttons, cards, inputs, navbars), a complete design system with default spacing/color scales, common mistakes to avoid, and workflow best practices.
+| `execute_figma_code` | Run any JavaScript with full `figma` Plugin API access |
+| `take_screenshot` | Capture what's on screen — the AI sees your canvas |
+| `read_selection` | Deep inspect fills, strokes, effects, layout, fonts, children |
+| `get_page_context` | Page name, selection, top-level frames |
+| `select_nodes` | Find and select by name or type (FRAME, TEXT, COMPONENT, etc.) |
+| `list_components` | List all components and component sets |
+| `get_styles` | List local paint, text, and effect styles |
+| `get_variables` | List design tokens — colors, numbers, strings |
+| `export_node` | Export as PNG, SVG, JPG, or PDF |
+| `duplicate_node` | Clone with offset and count for grids |
+| `undo` / `redo` | Roll back or redo with configurable steps |
+| `zoom_to` | Zoom to selection, all nodes, or a specific node |
+| `navigate` | Open a URL (e.g., a specific Figma file) |
+| `click` | Click at coordinates on the page |
+| `get_snapshot` | Accessibility tree for understanding UI structure |
 
 ### Built-in Design Intelligence
 
-tellfigma doesn't just execute code — it understands design. The system prompt includes:
+The AI receives a comprehensive system prompt with:
 
-- **Design recipes** — Button, Card, Input, Navbar patterns the AI can compose and customize
-- **Design system defaults** — 8px spacing scale, Tailwind-inspired colors, type scale, shadow presets
-- **Smart error recovery** — Hints for common Figma API mistakes (missing fonts, layout ordering, etc.)
-- **Auto-reconnect** — Drops the CDP connection? It picks back up on the next tool call
-- **Deep inspect** — `read_selection` gives the AI full CSS-like property readout before making edits
+- **Figma Plugin API reference** — every method, property, and pattern
+- **Design recipes** — buttons, cards, inputs, navbars the AI can compose
+- **Design system defaults** — 8px spacing scale, color palette, type scale, shadows
+- **Smart error recovery** — hints for common Figma API mistakes (fonts, layout ordering, null nodes)
+- **Auto-reconnect** — drops CDP? Picks back up on the next tool call
 
-## Why Chrome DevTools?
+### Design From Your Codebase
 
-Every other Figma AI tool uses one of two approaches:
+Using VS Code, Cursor, or Claude Code? The AI already has your project files. Ask it to design screens that match your actual codebase:
 
-1. **Figma REST API** (read-only) — can fetch design data but can't create or modify anything
-2. **Figma Plugin sandbox** — limited JavaScript, no direct DOM access, no real vision, need to manage a plugin + WebSocket bridge + MCP server
+> "Design a settings page that matches my app's design system"
 
-tellfigma uses a third approach: **Chrome DevTools Protocol**. This gives us:
+It reads your `tailwind.config.ts`, `globals.css`, component files — then creates Figma designs using your exact colors, fonts, spacing, and patterns. Works with **Tailwind**, **shadcn/ui**, **MUI**, **Chakra**, and any component library.
 
-- **Full Plugin API** — `figma.createFrame()`, `figma.currentPage.selection`, everything
-- **Real browser vision** — screenshots of exactly what the user sees
-- **No sandbox limits** — execute any JavaScript, access the full browser environment
-- **Zero setup** — no plugin to install, no API keys, no WebSocket bridges
-- **One process** — `npx tellfigma` and you're done
+```
+┌──────────┐     reads     ┌───────────┐    designs    ┌────────┐
+│ Your Code │ ────────────► │  AI Agent  │ ────────────► │ Figma  │
+│ (editor)  │  tailwind,   │ (Copilot/  │  your exact  │ canvas │
+│           │  components  │  Claude)   │  tokens      │        │
+└──────────┘              └───────────┘               └────────┘
+```
+
+---
+
+## How It Works
+
+1. `npx tellfigma` launches Chrome with `--remote-debugging-port=9222` and a dedicated profile (`~/.tellfigma-chrome-profile`)
+2. The MCP server starts on stdio
+3. When an AI calls `execute_figma_code`, tellfigma connects via CDP, finds the Figma tab, and runs JavaScript through `Runtime.evaluate`
+4. Screenshots use `Page.captureScreenshot` — real browser screenshots, not API renders
+5. The AI receives a system prompt with the full Figma Plugin API reference
+
+Chrome runs with its own profile so it doesn't interfere with your normal browsing.
+
+---
+
+## Compared to Alternatives
+
+| | tellfigma | Figma MCP (Dev Mode) | Claude Code to Figma | Plugin + WebSocket |
+|---|---|---|---|---|
+| **Creates designs** | ✅ | ❌ Read-only | ❌ Captures existing UI | ✅ |
+| **Edits designs** | ✅ | ❌ | ❌ One-time import | ✅ |
+| **Real screenshots** | ✅ | ✅ | N/A | ❌ |
+| **Any MCP client** | ✅ | ✅ | ❌ Claude only | ❌ |
+| **No API key** | ✅ | ❌ Token required | ❌ OAuth required | ✅ |
+| **No plugin install** | ✅ | ❌ | ❌ | ❌ |
+| **Full Plugin API** | ✅ | ❌ | ❌ | Partial |
+| **Setup** | `npx tellfigma` | Config + token | Server + OAuth | Plugin + WS + MCP |
+
+---
 
 ## Options
 
 ```
 npx tellfigma [options]
 
-Options:
   --port <number>   Chrome debug port (default: 9222)
   --help, -h        Show help
 ```
@@ -228,31 +236,25 @@ Options:
 
 - **Node.js 18+**
 - **Google Chrome** (or Chromium)
-- Any MCP-compatible AI app (Claude Desktop, Claude Code, VS Code, Cursor, Windsurf, etc.)
+- Any MCP-compatible AI app
 
-## How It Works (Technical)
+## Troubleshooting
 
-1. `npx tellfigma` launches Chrome with `--remote-debugging-port=9222` and a dedicated user profile (`~/.tellfigma-chrome-profile`)
-2. The MCP server starts on stdio and waits for tool calls
-3. When an AI app calls `execute_figma_code`, tellfigma connects to Chrome via CDP, finds the active Figma tab, and runs the code via `Runtime.evaluate`
-4. Screenshots use `Page.captureScreenshot` — real browser screenshots, not API renders
-5. The AI receives a system prompt with the full Figma Plugin API reference
+**"No Figma tab found"** — Open a Figma design file in the Chrome window that tellfigma launched. Make sure the URL contains `figma.com/design` or `figma.com/file`.
 
-Chrome runs with its own profile directory so it won't interfere with your normal browsing.
+**"Chrome debug port didn't become available"** — Another process may be using port 9222. Try `npx tellfigma --port 9333` or close other Chrome debug instances.
 
-## Compared to Alternatives
+**"Connection lost, reconnecting..."** — This is normal. tellfigma auto-reconnects on the next tool call. If it persists, reload the Figma tab.
 
-| Feature | tellfigma | Figma MCP Server | Claude Code to Figma | Plugin + WebSocket tools |
-|---------|-----------|-----------------|---------------------|-------------------------|
-| Creates designs from scratch | ✅ | ❌ | ❌ (captures existing UI) | ✅ |
-| Edits existing designs | ✅ | ❌ Read-only | ❌ One-time import | ✅ |
-| Real screenshots | ✅ | ✅ | N/A | ❌ |
-| Works with any MCP client | ✅ | ✅ | ❌ Claude Code only | ❌ |
-| Needs running code | ❌ | ❌ | ✅ Requires localhost/staging | ❌ |
-| API key / OAuth required | ❌ | ✅ Figma token | ✅ Figma OAuth | ❌ |
-| Plugin install | ❌ | ❌ | ❌ | ✅ |
-| Full Plugin API access | ✅ | ❌ | ❌ | Partial (sandboxed) |
-| Setup | `npx tellfigma` | Config + token | Remote server + OAuth | Plugin + WS + MCP |
+**Font errors** — Always call `await figma.loadFontAsync({ family, style })` before setting `.characters` on a text node. Inter "Semi Bold" has a space (not "SemiBold").
+
+**Code executed but nothing appeared** — Make sure you're calling `figma.currentPage.appendChild(node)` after creating frames/shapes. New nodes aren't visible until appended.
+
+---
+
+## Contributing
+
+PRs welcome. Please open an issue first for major changes.
 
 ## License
 

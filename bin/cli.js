@@ -74,7 +74,7 @@ if (showHelp) {
     "Design a login page with email and password fields"
     "Find all text on this page and list their font sizes"
 
-  More info: https://github.com/directivelabs/tellfigma
+  More info: https://github.com/mrpeterperez/tellfigma
 `);
   process.exit(0);
 }
