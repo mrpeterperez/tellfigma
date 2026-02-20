@@ -82,19 +82,23 @@ Other tools in the ecosystem:
 
 **So what's the actual difference between tellfigma and Claude Code to Figma?**
 
-They solve different problems:
+The short version: Claude Code to Figma **captures running code** as Figma layers. tellfigma **designs directly in Figma** — no code needed first.
+
+Claude Code to Figma needs you to build something, run it in a browser, then say "Send this to Figma." It screenshots your rendered UI and converts it into Figma layers. It's a capture tool — the source is your running app.
+
+tellfigma is different. You just talk to the AI and it creates designs natively in Figma using the Plugin API — `createFrame()`, `createText()`, auto-layout, variables, the works. No code has to exist first. And it goes both ways: it reads Figma back, takes screenshots, inspects properties, and iterates.
 
 | | tellfigma | Claude Code to Figma |
 |---|---|---|
+| **What it does** | Designs natively in Figma via Plugin API | Captures rendered browser UI into Figma layers |
+| **Starting point** | Nothing — creates from scratch or edits existing | Needs running code in a browser first |
 | **Direction** | Both ways — creates in Figma, reads it back | One way — code → Figma |
-| **How it works** | Runs Figma Plugin API directly — `createFrame()`, `createText()`, auto-layout, variables | Captures rendered browser DOM/screenshots and converts to Figma layers |
-| **Starting point** | Creates designs from scratch or edits existing ones | Requires running UI in a browser first |
-| **Iteration** | Screenshot → inspect → edit → repeat | One-shot capture, no back-and-forth |
+| **Iteration** | Screenshot → inspect → edit → repeat | One-shot capture |
 | **Reads Figma** | Yes — variables, styles, node properties, selection | No |
 | **MCP clients** | Any — Claude Desktop, Claude Code, VS Code, Cursor, Windsurf | Claude Code only (Remote MCP) |
 | **Auth** | None — zero keys, zero OAuth | OAuth + Figma plan |
 
-If you already have a running app and want to get a snapshot into Figma for your team to annotate, Claude Code to Figma does that well. If you want the AI to *design* in Figma — create layouts, build components, use your design tokens, iterate on the result — that's what tellfigma is for. They can coexist.
+They can coexist. Use Claude Code to Figma to capture what you've already built. Use tellfigma when you want AI to design, edit, and iterate inside Figma.
 
 ---
 
@@ -371,7 +375,11 @@ The official Figma MCP (Dev Mode) is **read-only** — it reads designs for code
 <details>
 <summary><strong>How is tellfigma different from Claude Code to Figma?</strong></summary>
 
-Claude Code to Figma captures your running browser UI and converts it into Figma layers — it's a one-way snapshot from code → Figma. tellfigma creates and edits designs directly in Figma using the Plugin API, reads Figma back (variables, styles, nodes), takes screenshots, and iterates. It also works with any MCP client, not just Claude Code. If you want to capture an existing UI into Figma, use Claude Code to Figma. If you want AI to design, edit, and iterate inside Figma, use tellfigma.
+Claude Code to Figma **captures running code** as Figma layers — you build something, run it in a browser, say "Send this to Figma," and it converts your rendered UI into editable layers. It's a capture tool.
+
+tellfigma **designs directly in Figma** — no running code needed. The AI creates designs natively using the Figma Plugin API (`createFrame()`, `createText()`, auto-layout, variables), reads Figma back, takes screenshots, and iterates. It also works with any MCP client, not just Claude Code.
+
+Capture existing UI → Claude Code to Figma. Design, edit, and iterate in Figma → tellfigma.
 </details>
 
 <details>
