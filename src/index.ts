@@ -27,19 +27,25 @@ registerTools(server);
 export async function startServer(port: number = 9222): Promise<{ launched: boolean; figmaReady: boolean }> {
   setChromePort(port);
 
-  // Launch or connect to Chrome
-  const chrome = await launchChrome(port);
-
-  // Check if a Figma tab is already open
-  const figmaTab = await findFigmaTab(port);
-  const figmaReady = !!figmaTab;
-
-  // Start MCP server on stdio
+  // Start MCP server on stdio FIRST — avoids client handshake timeouts
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
   log('MCP server running on stdio');
   log('Ready for connections from Claude Desktop, Claude Code, VS Code, Cursor, etc.');
 
-  return { launched: chrome.launched, figmaReady };
+  // Launch Chrome lazily — ensureConnected() handles retries on each tool call
+  let launched = false;
+  let figmaReady = false;
+  try {
+    const chrome = await launchChrome(port);
+    launched = chrome.launched;
+    const figmaTab = await findFigmaTab(port);
+    figmaReady = !!figmaTab;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    log(`Chrome launch deferred: ${msg} — will retry on first tool call`);
+  }
+
+  return { launched, figmaReady };
 }

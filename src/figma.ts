@@ -6,7 +6,7 @@
 // ============================================================
 
 import CDP from 'chrome-remote-interface';
-import { findFigmaTab, findAllFigmaTabs, type FigmaTabInfo } from './chrome.js';
+import { findFigmaTab, findAllFigmaTabs, launchChrome, type FigmaTabInfo } from './chrome.js';
 
 // ---- Types ----
 interface TabConnection {
@@ -95,7 +95,13 @@ export async function ensureConnected(): Promise<CDP.Client> {
     }
   }
 
-  // No active tab — find one
+  // No active tab — ensure Chrome is running, then find a tab
+  try {
+    await launchChrome(chromePort);
+  } catch {
+    // Chrome may already be running or unavailable — findFigmaTab will fail gracefully
+  }
+
   let tab: FigmaTabInfo | null = null;
   for (let attempt = 0; attempt < 3; attempt++) {
     tab = await findFigmaTab(chromePort);
